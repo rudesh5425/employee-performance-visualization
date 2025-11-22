@@ -41,11 +41,25 @@ plt.xlabel("Department")
 plt.ylabel("Count")
 
 # --------------------------------------
-# Export visualization to HTML
+# Convert plot to HTML
 # --------------------------------------
-html_output = mpld3.fig_to_html(plt.gcf())
+html_plot = mpld3.fig_to_html(plt.gcf())
 
+# --------------------------------------
+# ADD EMAIL INSIDE HTML FILE
+# --------------------------------------
+email_block = """
+<div style="margin-top:20px; font-size:14px; color:#444;">
+    Verification Email: 24ds2000104@ds.study.iitm.ac.in
+</div>
+"""
+
+html_final = html_plot + email_block
+
+# --------------------------------------
+# Save HTML
+# --------------------------------------
 with open("employee_visualization.html", "w") as f:
-    f.write(html_output)
+    f.write(html_final)
 
-print("HTML file created: employee_visualization.html")
+print("HTML file created with email embedded: employee_visualization.html")
