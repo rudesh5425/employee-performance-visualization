@@ -1,13 +1,13 @@
-# create_html.py
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
-import mpld3
+import base64
+from io import BytesIO
 import inspect
-import sys   # FIXED: required for inspect.getsource()
+import sys
 
 # -------------------------------
-# 1. CREATE DATASET
+# 1. CREATE SYNTHETIC DATA
 # -------------------------------
 data = {
     "Employee": [f"E{i}" for i in range(1, 101)],
@@ -16,11 +16,11 @@ data = {
 
 df = pd.DataFrame(data)
 
-# Frequency count for Sales
+# Count frequency of Sales department
 sales_count = df[df["Department"] == "Sales"].shape[0]
 
 # -------------------------------
-# 2. CREATE VISUALIZATION
+# 2. CREATE HISTOGRAM AND SAVE TO BASE64
 # -------------------------------
 plt.figure(figsize=(8, 6))
 sns.countplot(data=df, x="Department", palette="Set2")
@@ -28,17 +28,19 @@ plt.title("Department Distribution (Employee Count)")
 plt.xlabel("Department")
 plt.ylabel("Count")
 
-# Convert plot to interactive HTML
-plot_html = mpld3.fig_to_html(plt.gcf())
+buffer = BytesIO()
+plt.savefig(buffer, format="png")
+buffer.seek(0)
+img_base64 = base64.b64encode(buffer.read()).decode("utf-8")
 plt.close()
 
 # -------------------------------
-# 3. READ THIS SCRIPT'S CODE AS TEXT (for embedding)
+# 3. READ THIS SCRIPT AS TEXT
 # -------------------------------
 code_text = inspect.getsource(sys.modules[__name__])
 
 # -------------------------------
-# 4. BUILD FINAL HTML
+# 4. BUILD HTML WITHOUT JAVASCRIPT
 # -------------------------------
 html = f"""
 <!doctype html>
@@ -46,8 +48,6 @@ html = f"""
 <head>
 <meta charset="utf-8">
 <title>Employee Visualization</title>
-<script src="https://mpld3.github.io/js/d3.v5.min.js"></script>
-<script src="https://mpld3.github.io/js/mpld3.v0.5.12.js"></script>
 </head>
 <body>
 
@@ -61,16 +61,16 @@ html = f"""
 <p><strong>{sales_count}</strong></p>
 
 <h3>Visualization</h3>
-{plot_html}
+<img src="data:image/png;base64,{img_base64}" alt="Histogram" />
 
 </body>
 </html>
 """
 
 # -------------------------------
-# 5. SAVE FILE
+# 5. SAVE HTML
 # -------------------------------
 with open("employee_visualization.html", "w", encoding="utf-8") as f:
     f.write(html)
 
-print("employee_visualization.html created successfully!")
+print("employee_visualization.html created successfully with embedded PNG chart!")
